@@ -14,25 +14,28 @@ def get_location_id(location_name, weather_json):
         if location["name"] == location_name:
             return location["lid"]
 
-def get_weather(id, weather_json):
+def get_weather(location_id, weather_json):
     for location in weather_json:
-        if location["lid"] == id:
+        if location["lid"] == location_id:
             return location["weather"]
 
-def get_forecast(id, forecast_json):
+def get_forecast(location_id, forecast_json):
     for location in forecast_json:
-        if location["location_id"] == id:
+        if location["location_id"] == location_id:
             return location["forecast"]
 
-def filter_forecast(location):
-    return {
-        "date": location["0"]["date"],
-        "temp_max": location["0"]["temp_max"],
-        "temp_min": location["0"]["temp_min"],
-        "morning_description": location["0"]["morning"]["description"],
-        "afternoon_description": location["0"]["afternoon"]["description"]
+def filter_forecast(forecast):
+    d = {}
+    for k, v in forecast.items():
+        d[k] = {
+            "date": forecast[k]["date"],
+            "temp_max": forecast[k]["temp_max"],
+            "temp_min": forecast[k]["temp_min"],
+            "morning_description": forecast[k]["morning"]["description"],
+            "afternoon_description": forecast[k]["afternoon"]["description"]
+        }
+    return d
 
-    }
 
 def main():
     ipinfo_json = fetch_json("https://ipinfo.io/json")
@@ -40,10 +43,10 @@ def main():
     forecast_json = fetch_json("https://ws.smn.gob.ar/forecast")
 
     name = ipinfo_json["city"]
-    id = get_location_id(name, weather_json)
+    location_id = get_location_id(name, weather_json)
 
-    weather = get_weather(id, weather_json)
-    forecast = get_forecast(id, forecast_json)
+    weather = get_weather(location_id, weather_json)
+    forecast = get_forecast(location_id, forecast_json)
     forecast = filter_forecast(forecast)
     print(json.dumps(weather, indent=2, sort_keys=True))
 
